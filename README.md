@@ -48,6 +48,8 @@ Or configure it at the instance level: $RDECK_BASE/etc/framework.properties
 
 * proxy_host (optional): Your egress proxy host.
 * proxy_port: Required if proxy_host is set. The port the network egress proxy accepts traffic on.
+* client (optional): Display name shown in PagerDuty incidents (e.g., Rundeck). Supports the same `${job.*}` tokens as `subject`.
+* client_url (optional): URL linked from the incident to your Rundeck deployment or runbook; token expansion is supported.
 
 These can be configured at the project level. 
 Most likely this needs to be configured at the instance level: $RDECK_BASE/etc/framework.properties

@@ -38,6 +38,12 @@ public class PagerDutyNotificationPlugin implements NotificationPlugin {
     @PluginProperty(title = "Integration Key", description = "PagerDuty Service Integration Key", required = true, defaultValue=PagerDutyNotificationPlugin.PD_KEY)
     private String service_key;
 
+    @PluginProperty(title = "Client Name", description = "Optional display name shown in PagerDuty incidents", required = false)
+    private String client;
+
+    @PluginProperty(title = "Client URL", description = "Optional URL linking back to the originating system", required = false)
+    private String client_url;
+
     @PluginProperty(title = "Proxy host", description = "Outbound prox", required = false, scope=PropertyScope.Project)
     private String proxy_host;
 
@@ -104,6 +110,17 @@ public class PagerDutyNotificationPlugin implements NotificationPlugin {
         }
     }
 
+    /**
+     * Allow opt-in token expansion for optional configuration fields.
+     */
+    def expandOptionalField(String value, Map executionData) {
+        def trimmed = value?.trim()
+        if (!trimmed) {
+            return null
+        }
+        subjectString(trimmed, [execution: executionData])
+    }
+
 
     def apiV1(String trigger,PagerDutyApi apiService, Map executionData){
         def expandedSubject = subjectString(subject.empty==false?subject:SUBJECT_LINE, [execution:executionData])
@@ -122,6 +139,15 @@ public class PagerDutyNotificationPlugin implements NotificationPlugin {
                         trigger: trigger
                 ]
         ]
+
+        def clientName = expandOptionalField(client, executionData)
+        if (clientName) {
+            job_data.client = clientName
+        }
+        def clientUrl = expandOptionalField(client_url, executionData)
+        if (clientUrl) {
+            job_data.client_url = clientUrl
+        }
 
         Response<PagerResponse> response = apiService.sendEvent(job_data).execute()
         if(response.errorBody()!=null){
@@ -176,6 +202,15 @@ public class PagerDutyNotificationPlugin implements NotificationPlugin {
             ]
 
         ]
+
+        def clientName = expandOptionalField(client, executionData)
+        if (clientName) {
+            job_data.client = clientName
+        }
+        def clientUrl = expandOptionalField(client_url, executionData)
+        if (clientUrl) {
+            job_data.client_url = clientUrl
+        }
 
         Response<PagerResponse> response = apiService.sendEventV2(job_data).execute()
         if(response.errorBody()!=null){
